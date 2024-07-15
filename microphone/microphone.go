@@ -51,8 +51,9 @@ func RecordToFile(file_path string, sampleRate uint32) error {
                 }
         }()
 
+        // TODO mechanism to stop recording on global keypress
         // TODO mechanism to stop recording after a certain duration of silence??
-        <-time.After(3 * time.Second)
+        <-time.After(10 * time.Second)
         close(stop)
         defer stream.Stop()
         fmt.Println("\nRecording stopped")
