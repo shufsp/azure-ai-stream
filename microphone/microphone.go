@@ -2,7 +2,6 @@ package microphone
 
 import (
 	"fmt"
-        "time"
         "os"
         "github.com/gordonklaus/portaudio"
 	"github.com/youpy/go-wav"
@@ -20,7 +19,7 @@ func RecordToFile(file_path string, sampleRate uint32) error {
         defer portaudio.Terminate()
 
         in := make([]int16, 1024)
-        stream, err := portaudio.OpenDefaultStream(1, 0, 44100, len(in), in)
+        stream, err := portaudio.OpenDefaultStream(1, 0, float64(sampleRate), len(in), in)
         if err != nil {
                 return fmt.Errorf("error opening stream: %w", err)
         }
@@ -37,24 +36,65 @@ func RecordToFile(file_path string, sampleRate uint32) error {
         }
         fmt.Print("Recording... ")
 
-        // TODO record into samples buffer 
         stop := make(chan struct{})
+        done := make(chan struct{})
+        const silenceMaxDurationSeconds uint32 = 3
+        const silenceThreshold int16 = 100
+
+        var sampleCounter uint32 = 0
+        var silenceCounter uint32 = 0
+        var secondsLeftUntilStop uint32 = silenceMaxDurationSeconds
+        isTalkingStarted := false
+
+        // its janky. but it works. therefore i do not care
         go func() {
-                for {
-                        select {
-                        case <-stop:
-                                return // Stop recording when stop signal is received
-                        default:
-                                stream.Read()
-                                samples = append(samples, in...)
+        defer close(done)
+        for {
+                select {
+                case <-stop:
+                        return // Stop recording when stop signal is received
+                default:
+                        stream.Read()
+                        
+                        for _, sample := range in {
+                                sampleCounter++
+
+                                if sample < 0 {
+                                        sample = -sample
+                                }
+
+                                if isTalkingStarted && sample < silenceThreshold {
+                                        // silence occurring
+                                        silenceCounter++
+                                } else {
+                                        // squawkin
+                                        silenceCounter = 0
+                                        isTalkingStarted = true
+                                }
+
+                                if silenceCounter % sampleRate == 0 {
+                                        // runs every 1 second
+                                        secondsLeftUntilStop = (((silenceMaxDurationSeconds * sampleRate) - silenceCounter) / sampleRate) 
+                                }
+                                
+
+                                if sampleCounter % sampleRate == 0 {
+                                        fmt.Printf("Stopping recording in %ds ...\n", secondsLeftUntilStop)
+                                }
+
+                                if silenceCounter > silenceMaxDurationSeconds * sampleRate {
+                                        // silent for too long
+                                        close(stop) 
+                                        return
+                                }
                         }
+                        
+                        samples = append(samples, in...)
                 }
+        }
         }()
 
-        // TODO mechanism to stop recording on global keypress
-        // TODO mechanism to stop recording after a certain duration of silence??
-        <-time.After(10 * time.Second)
-        close(stop)
+        <-done
         defer stream.Stop()
         fmt.Println("\nRecording stopped")
 
