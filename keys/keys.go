@@ -9,6 +9,8 @@ func WaitForKey(key uint16) error {
         // TODO need to be in sudo to read the global key but 
         // the microphone will stop working in sudo !
         // what the hell do we do?!
+
+        // UPDATE ^^ you know what we do? we DONT! 
         keyboard, err := evdev.Open("/dev/input/event11") // Adjust event device as per your system
         if err != nil {
                 return fmt.Errorf("error opening input device: %v", err)
