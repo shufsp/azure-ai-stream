@@ -8,7 +8,7 @@ import (
 )
 
 
-func RecordToFile(file_path string, sampleRate uint32) error {
+func RecordToFile(file_path string, sampleRate uint32, silenceMaxDurationSeconds uint32, sampleSilenceThreshold int16) error {
         //
         // Setup recording
         //
@@ -38,8 +38,6 @@ func RecordToFile(file_path string, sampleRate uint32) error {
 
         stop := make(chan struct{})
         done := make(chan struct{})
-        const silenceMaxDurationSeconds uint32 = 3
-        const silenceThreshold int16 = 100
 
         var sampleCounter uint32 = 0
         var silenceCounter uint32 = 0
@@ -63,7 +61,7 @@ func RecordToFile(file_path string, sampleRate uint32) error {
                                         sample = -sample
                                 }
 
-                                if isTalkingStarted && sample < silenceThreshold {
+                                if isTalkingStarted && sample < sampleSilenceThreshold {
                                         // silence occurring
                                         silenceCounter++
                                 } else {
@@ -73,7 +71,6 @@ func RecordToFile(file_path string, sampleRate uint32) error {
                                 }
 
                                 if silenceCounter % sampleRate == 0 {
-                                        // runs every 1 second
                                         secondsLeftUntilStop = (((silenceMaxDurationSeconds * sampleRate) - silenceCounter) / sampleRate) 
                                 }
                                 
