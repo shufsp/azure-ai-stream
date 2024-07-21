@@ -1,0 +1,41 @@
+#!/bin/python3
+
+import os
+import subprocess
+
+print("------------------------------")
+print("superbarosa azure superplex")
+print("------------------------------")
+
+BAROSA_BASE_DIR = os.getcwd()
+BAROSA_SERVER_FOLDER = os.path.join(BAROSA_BASE_DIR, "barosa-server")
+DIRS = os.listdir(BAROSA_BASE_DIR)
+
+
+def run_module_command(module: str, command: str):
+    os.chdir(os.path.join(BAROSA_BASE_DIR, module))
+    subprocess.run(command, shell=True)
+    os.chdir(BAROSA_BASE_DIR)
+
+
+dirs_built = 0
+for module in DIRS:
+    if not os.path.isdir(module):
+        continue
+
+    main_go = os.path.join(BAROSA_BASE_DIR, module, "main.go")
+    if not os.path.isfile(main_go):
+        # not a go module
+        continue
+
+    print(f"Running unit tests for {module}")
+    run_module_command(module, "go test")
+
+    print(f"Building {module}")
+    # we move the final binary to the api server for it to run
+    module_output_path = os.path.join(BAROSA_SERVER_FOLDER, module)
+    run_module_command(module, f'go build -o "{module_output_path}" main.go')
+
+    dirs_built += 1
+
+print(f"Built {dirs_built} Go modules")
