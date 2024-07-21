@@ -9,6 +9,7 @@ print("superbarosa azure superplex")
 print("------------------------------")
 
 BAROSA_BASE_DIR = os.getcwd()
+BAROSA_CLIENT_FOLDER = os.path.join(BAROSA_BASE_DIR, "..", "frontend")
 BAROSA_SERVER_FOLDER = os.path.join(BAROSA_BASE_DIR, "barosa-server")
 BAROSA_INTEGRATION_FOLDER = os.path.join(BAROSA_BASE_DIR, "barosa-integration-testing")
 DIRS = os.listdir(BAROSA_BASE_DIR)
@@ -44,5 +45,15 @@ for module in DIRS:
     shutil.copy(module_output_path, BAROSA_INTEGRATION_FOLDER)
 
     dirs_built += 1
+
+# gossip secrets with frontend express server
+env_file = os.path.join(BAROSA_SERVER_FOLDER, ".env")
+if not os.path.isfile(env_file):
+    print("Unable to gossip env secrets with frontend")
+    print(f"env file not found in barosa server folder '{BAROSA_SERVER_FOLDER}'")
+else:
+    gossip_destination = BAROSA_CLIENT_FOLDER
+    shutil.copy(env_file, gossip_destination)
+    print("env file gossiped with frontend")
 
 print(f"Built {dirs_built} Go modules")

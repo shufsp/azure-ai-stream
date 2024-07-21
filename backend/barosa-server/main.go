@@ -1,9 +1,13 @@
 package main
 
 import (
-	"fmt"
+	"barosa.fun/azure-ai-stream-backend/environment"
+	"barosa.fun/azure-ai-stream-backend/server"
 )
 
 func main() {
-	fmt.Println("Hello telemetry!")
+	environment.Init()
+	environment.CheckAuthToken()
+	environment.CheckAuthSecret()
+	server.Init()
 }
