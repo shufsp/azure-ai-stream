@@ -9,5 +9,6 @@ func main() {
 	environment.Init()
 	environment.CheckAuthToken()
 	environment.CheckAuthSecret()
+	environment.CheckClientPort()
 	server.Init()
 }

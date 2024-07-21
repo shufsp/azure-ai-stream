@@ -1,12 +1,14 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"strings"
 
 	"barosa.fun/azure-ai-stream-backend/auth"
+	"barosa.fun/azure-ai-stream-backend/command"
 	"github.com/gin-gonic/gin"
 )
 
@@ -20,6 +22,10 @@ var validFeatures = map[string]bool{
     "people":		true,
 }
 
+func RequestCorsMiddleware() gin.HandlerFunc {
+	return auth.CorsServerMiddleware
+}
+
 func RequestAuthorizeMiddleware() gin.HandlerFunc {
 	return auth.AuthCheckBearerTokenServerMiddleware 
 }
@@ -31,6 +37,19 @@ func RequestPing(c *gin.Context) {
 }
 
 func RequestImageFeatures(c *gin.Context) {
+	window := strings.TrimSpace(c.Query("window"))
+	if len(window) == 0 {	
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "window query parameter is required",
+		})
+		return
+	}
+
+	windowSearchMethod := strings.TrimSpace(c.Query("method"))
+	if len(windowSearchMethod) == 0 {
+		windowSearchMethod = "class"
+	}
+
 	features := strings.TrimSpace(c.Query("features"))
 	if len(features) == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -48,12 +67,43 @@ func RequestImageFeatures(c *gin.Context) {
 			return
 		}
 	}
-	fmt.Printf("%v", featuresSlice)
+
+	// get screenshot of window
+	screenshotFile, err := command.CommandRunBarosaScreenshot(window, windowSearchMethod)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": fmt.Sprintf("window screenshot failed: %v", err),
+		})
+		return
+	}
+
+	azureResponse, err := command.CommandRunBarosaAzure(screenshotFile, features)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": fmt.Sprintf("barosa azure call failed: %v", err),
+		})
+		return
+	}
+	
+	var azureJson map[string]interface{}
+	err = json.Unmarshal([]byte(azureResponse), &azureJson)
+	if err != nil {	
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": fmt.Sprintf("unable to parse azure response to json: %v (azure raw response: %s)", err, azureResponse),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"azureResponse": azureJson,
+	})
 }
 
 func Init() {
 	log.Println("Starting barosa backend")
 	r := gin.Default()
+	r.SetTrustedProxies(nil)
+	r.Use(RequestCorsMiddleware())
 	r.Use(RequestAuthorizeMiddleware())
 	r.GET("/ping", RequestPing)
 	r.GET("/image-features", RequestImageFeatures)

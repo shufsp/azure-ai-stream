@@ -3,10 +3,13 @@
     <head>
         <meta charset="UTF-8">
         <title>Barosa Azure Vision</title>
+        <script src="barosa-azure.js"></script>
+        <script type="module">
+            document.addEventListener("DOMContentLoaded", function() {
+                scarab("<%= token %>", "<%= window %>", "<%= method %>")
+            })
+        </script>
     </head>
     <body>
-        <p><%= token %></p>
     </body>
-    <script src="/barosa-azure.js"></script>
-    <script>scarab("<%= token %>")</script>
 </html>

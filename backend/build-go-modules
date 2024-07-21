@@ -22,6 +22,9 @@ def run_module_command(module: str, command: str):
 
 
 dirs_built = 0
+combined_env_path = os.path.join(BAROSA_SERVER_FOLDER, ".env")
+combined_env_content = ""
+
 for module in DIRS:
     if not os.path.isdir(module):
         continue
@@ -44,6 +47,12 @@ for module in DIRS:
     os.makedirs(BAROSA_INTEGRATION_FOLDER, exist_ok=True)
     shutil.copy(module_output_path, BAROSA_INTEGRATION_FOLDER)
 
+    # finally add to combined final .env file
+    env_file = os.path.join(BAROSA_BASE_DIR, module, ".env")
+    if os.path.isfile(env_file):
+        with open(env_file, 'r') as f:
+            combined_env_content += f.read() + "\n"
+
     dirs_built += 1
 
 # gossip secrets with frontend express server
@@ -55,5 +64,9 @@ else:
     gossip_destination = BAROSA_CLIENT_FOLDER
     shutil.copy(env_file, gossip_destination)
     print("env file gossiped with frontend")
+
+# they busy gossiping, so now write the combined env file for server only
+with open(combined_env_path, 'w') as f:
+    f.write(combined_env_content)
 
 print(f"Built {dirs_built} Go modules")

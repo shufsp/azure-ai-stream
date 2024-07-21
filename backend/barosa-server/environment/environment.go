@@ -5,11 +5,13 @@ import (
 	"github.com/joho/godotenv"
 	"strings"
 	"os"
+	"strconv"
 )
 
 const (
 	AUTH_ENV_KEY = "BAROSA_BEARER_AUTH"
 	AUTH_SECRET_KEY = "BAROSA_BEARER_SECRET"
+	BAROSA_CLIENT_PORT_KEY = "BAROSA_CLIENT_PORT"
 	AUTH_ENV_KEY_MIN_LENGTH = 12
 	AUTH_SECRET_KEY_MIN_LENGTH = 48
 )
@@ -19,6 +21,23 @@ func Init() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatalf("Failed to load env vars: %v\n", err)
+		return
+	}
+}
+
+func GetClientPort() string {
+	return strings.TrimSpace(os.Getenv(BAROSA_CLIENT_PORT_KEY))
+}
+
+func CheckClientPort() {
+	clientPort := GetClientPort()
+	if len(clientPort) == 0 {
+		log.Fatalf("Client port env var (%s) is empty! we need this provided", BAROSA_CLIENT_PORT_KEY)
+		return
+	}
+
+	if _, err := strconv.ParseInt(clientPort, 10, 64); err != nil {
+		log.Fatalf("Client port '%s' is not a valid port: %v", clientPort, err)
 		return
 	}
 }
