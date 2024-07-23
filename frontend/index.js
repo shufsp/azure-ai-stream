@@ -27,9 +27,13 @@ app.use((req, res, next) => {
 
 app.get("/", (req, res) => {
   res.render("index", { 
-    token: res.locals.token, 
-    window: req.query["window"] || undefined,  
-    method: req.query["method"] || undefined,
+    token:            res.locals.token, 
+    avifQuality:      req.query["avifQuality"] || undefined,
+    avifAlphaQuality: req.query["avifAlphaQuality"] || undefined,
+    avifSpeed:        req.query["avifSpeed"] || undefined,
+    window:           req.query["window"] || undefined,  
+    method:           req.query["method"] || undefined,
+    features:         req.query["features"] || undefined,
   });
 });
 

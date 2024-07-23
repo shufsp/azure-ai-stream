@@ -34,10 +34,7 @@ for module in DIRS:
         # not a go module
         continue
 
-    print(f"Running unit tests for {module}")
     run_module_command(module, "go test")
-
-    print(f"Building {module}")
 
     # we output the final binary to the api server for it to run
     module_output_path = os.path.join(BAROSA_SERVER_FOLDER, module)
@@ -54,6 +51,8 @@ for module in DIRS:
             combined_env_content += f.read() + "\n"
 
     dirs_built += 1
+
+print("------------------------------")
 
 # gossip secrets with frontend express server
 env_file = os.path.join(BAROSA_SERVER_FOLDER, ".env")

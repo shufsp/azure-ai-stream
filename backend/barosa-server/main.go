@@ -7,8 +7,6 @@ import (
 
 func main() {
 	environment.Init()
-	environment.CheckAuthToken()
-	environment.CheckAuthSecret()
-	environment.CheckClientPort()
+	environment.CheckEnvVars()
 	server.Init()
 }

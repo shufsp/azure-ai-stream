@@ -6,9 +6,12 @@ import (
 	"log"
 	"net/http"
 	"strings"
-
+	"image"
+	"strconv"
 	"barosa.fun/azure-ai-stream-backend/auth"
 	"barosa.fun/azure-ai-stream-backend/command"
+	"barosa.fun/azure-ai-stream-backend/compression"
+	"github.com/gen2brain/avif"
 	"github.com/gin-gonic/gin"
 )
 
@@ -77,7 +80,35 @@ func RequestImageFeatures(c *gin.Context) {
 		return
 	}
 
-	azureResponse, err := command.CommandRunBarosaAzure(screenshotFile, features)
+	// avif/lanzcos
+	avifQuality, err := strconv.Atoi(c.Query("avifQuality"))
+	if err != nil {
+		avifQuality = 30
+	}
+	avifAlphaQuality, err := strconv.Atoi(c.Query("avifAlphaQuality"))
+	if err != nil {
+		avifAlphaQuality = 10
+	}
+	avifSpeed, err := strconv.Atoi(c.Query("avifSpeed"))
+	if err != nil {
+		avifSpeed = 10
+	}
+
+	avifOutputFilename := fmt.Sprintf("%s_avif", screenshotFile)
+	_, err = compression.AvifCompress(screenshotFile, avifOutputFilename, avif.Options{
+		Quality: avifQuality,
+		QualityAlpha: avifAlphaQuality,
+		Speed: avifSpeed,
+		ChromaSubsampling: image.YCbCrSubsampleRatio420,
+	}, 20)
+	if err != nil {	
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": fmt.Sprintf("failed to compress avif: %v", err),
+		})
+		return
+	}
+
+	azureResponse, err := command.CommandRunBarosaAzure(avifOutputFilename, features)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": fmt.Sprintf("barosa azure call failed: %v", err),

@@ -81,6 +81,7 @@ func WindowScreenshot(windowId string, filename string) (error) {
     cmd := exec.Command("maim",
         "--window", windowId,
         "--quality", "1",
+        "--format", "bmp",
         "--hidecursor",
         filename)
 

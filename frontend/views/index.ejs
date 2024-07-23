@@ -6,7 +6,13 @@
         <script src="barosa-azure.js"></script>
         <script type="module">
             document.addEventListener("DOMContentLoaded", function() {
-                scarab("<%= token %>", "<%= window %>", "<%= method %>")
+                const props = {
+                    "avifQuality": "<%= avifQuality %>",
+                    "avifAlphaQuality": "<%= avifAlphaQuality %>",
+                    "avifSpeed": "<%= avifSpeed %>",
+                    "features": "<%= features %>"
+                }
+                scarab("<%= token %>", "<%= window %>", "<%= method %>", props)
             })
         </script>
     </head>

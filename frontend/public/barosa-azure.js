@@ -16,14 +16,14 @@ function requestFromBarosaServer(request, token) {
   })
 }
 
-async function scarab(token, window, method) {
+async function scarab(token, window, method, props) {
   const pingResponse = await requestFromBarosaServer("ping", token)
   if (pingResponse.error) {
     console.error("Couldn't reach the barosa server.. is the GO server started?")
     return
   }
 
-  const imgFeaturesRequestUrl = `image-features?features=denseCaptions&window=${window}&method=${method||"class"}`
+  const imgFeaturesRequestUrl = `image-features?window=${window}&method=${method||"class"}&avifQuality=${props.avifQuality||""}&avifAlphaQuality=${props.avifAlphaQuality||""}&avifSpeed=${props.avifSpeed||""}&features=${props.features||""}`
   const imgFeaturesResponse = await requestFromBarosaServer(imgFeaturesRequestUrl, token) 
   console.log(imgFeaturesResponse)
 }
