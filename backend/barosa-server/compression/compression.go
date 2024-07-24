@@ -2,23 +2,24 @@ package compression
 
 import (
 	"fmt"
-	"bytes"
-	"os"
-	"image/jpeg"
+	"github.com/disintegration/imaging"
 	"github.com/gen2brain/avif"
 	"golang.org/x/image/bmp"
+	"image"
+	"image/color"
+	"os"
 )
 
 func AvifCompress(filename string, filenameOutput string, encodeOptions avif.Options, jpegQuality int) (string, error) {
 	inFile, err := os.Open(filename)
 	if err != nil {
-	   return "", fmt.Errorf("failed to open BMP file: %v", err)
+		return "", fmt.Errorf("failed to open BMP file: %v", err)
 	}
 	defer inFile.Close()
 
 	img, err := bmp.Decode(inFile)
 	if err != nil {
-	   return "", fmt.Errorf("failed to decode BMP file: %v", err)
+		return "", fmt.Errorf("failed to decode BMP file: %v", err)
 	}
 
 	file, err := os.Create(filenameOutput)
@@ -31,33 +32,23 @@ func AvifCompress(filename string, filenameOutput string, encodeOptions avif.Opt
 		return "", fmt.Errorf("Avif encoding failed for %s: %v", filename, err)
 	}
 
-	avifFileForReading, err := os.Open(filenameOutput)
-	if err != nil {
-		return "", fmt.Errorf("failed to open encoded AVIF file: %v", err)
-	}
-	defer avifFileForReading.Close()
-
-	decodedImg, err := avif.Decode(avifFileForReading)
-	if err != nil {
-		return "", fmt.Errorf("failed to decode AVIF file: %v", err)
-	}
-
-	var buf bytes.Buffer
-	err = jpeg.Encode(&buf, decodedImg, &jpeg.Options{
-		Quality: jpegQuality,	
-	})
-	if err != nil {
-		return "", fmt.Errorf("JPEG encoding failed: %v", err)
-	}
-
-	err = os.WriteFile(filenameOutput, buf.Bytes(), 0644)
-	if err != nil {
-		return "", fmt.Errorf("failed to write JPEG file: %v", err)
-	}
-
 	return filenameOutput, nil
 }
 
-func Lanzcos(filename string, filenameOutput string) (string, error) {
+func Lanzcos(filename string, width int, filenameOutput string) (string, error) {
+	src, err := imaging.Open(filename)
+	if err != nil {
+		return "", fmt.Errorf("failed to open image: %v", err)
+	}
+
+	// preserves aspect ratio
+	method := imaging.Resize(src, width, 0, imaging.Lanczos)
+	dst := imaging.New(width, method.Rect.Dy(), color.NRGBA{0, 0, 0, 0})
+	dst = imaging.Paste(dst, method, image.Pt(0, 0))
+
+	err = imaging.Save(dst, filenameOutput)
+	if err != nil {
+		return "", fmt.Errorf("failed to save image: %v", err)
+	}
 	return filenameOutput, nil
 }

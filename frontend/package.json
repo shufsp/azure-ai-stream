@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "bun run build:neopets && bun run build:scarab",
+    "build": "npm run build:neopets && npm run build:scarab",
     "build:neopets": "rm -rf dist && mkdir dist",
     "build:scarab": "cp index.js dist/ && npm run build:gossip && npm run build:public && npm run build:visionworks",
     "build:gossip": "cp .env dist/",

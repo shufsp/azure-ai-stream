@@ -1,21 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Barosa Azure Vision</title>
-        <script src="barosa-azure.js"></script>
-        <script type="module">
-            document.addEventListener("DOMContentLoaded", function() {
-                const props = {
-                    "avifQuality": "<%= avifQuality %>",
-                    "avifAlphaQuality": "<%= avifAlphaQuality %>",
-                    "avifSpeed": "<%= avifSpeed %>",
-                    "features": "<%= features %>"
-                }
-                scarab("<%= token %>", "<%= window %>", "<%= method %>", props)
-            })
-        </script>
-    </head>
-    <body>
-    </body>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Barosa Azure Vision</title>
+    <script src="barosa-azure.js"></script>
+    <script src="barosa-canvas.js"></script>
+    <script type="module">
+        document.addEventListener("DOMContentLoaded", function () {
+            const canvas = document.getElementById('barosa-canvas');
+            const ctx = canvas.getContext('2d');
+
+            const props = {
+                "avifQuality": "<%= avifQuality %>",
+                "avifAlphaQuality": "<%= avifAlphaQuality %>",
+                "avifSpeed": "<%= avifSpeed %>",
+                "features": "<%= features %>",
+                "lanzcosWidth": "<%= lanzcosWidth %>"
+            }
+
+            scarab("<%= token %>", "<%= window %>", "<%= method %>", props)
+                .then(response => response.json())
+                .then(response => consumeScarabToCanvas(response, ctx))
+        })
+    </script>
+</head>
+
+<body>
+    <canvas id="barosa-canvas"></canvas>
+</body>
+
 </html>
