@@ -24,9 +24,6 @@ jobs:
     - name: Barosa Azure
       run: cd backend/barosa-azure && go build -v main.go && go test -v 
 
-    - name: Barosa Microphone
-      run: cd backend/barosa-microphone && go build -v main.go && go test -v 
-
     - name: Barosa Server
       run: cd backend/barosa-server && go build -v main.go && go test -v 
 
