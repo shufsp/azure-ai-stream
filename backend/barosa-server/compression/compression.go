@@ -35,22 +35,23 @@ func AvifCompress(filename string, filenameOutput string, encodeOptions avif.Opt
 	return filenameOutput, nil
 }
 
-func Lanzcos(filename string, width int, filenameOutput string) (string, int, int, error) {
+func Lanzcos(filename string, width int, filenameOutput string) (string, float64, error) {
 	src, err := imaging.Open(filename)
 	if err != nil {
-		return "", -1, -1, fmt.Errorf("failed to open image: %v", err)
+		return "", -1, fmt.Errorf("failed to open image: %v", err)
 	}
 
-	// preserves aspect ratio
+	// used for scaling back up to original dimensions on front end
+	// aspect ratio is preserved
 	originalWidth := src.Bounds().Dx()
-	originalHeight := src.Bounds().Dy()
+	scalingFactor := float64(originalWidth) / float64(width)
 	method := imaging.Resize(src, width, 0, imaging.Lanczos)
 	dst := imaging.New(width, method.Rect.Dy(), color.NRGBA{0, 0, 0, 0})
 	dst = imaging.Paste(dst, method, image.Pt(0, 0))
 
 	err = imaging.Save(dst, filenameOutput)
 	if err != nil {
-		return "", -1, -1, fmt.Errorf("failed to save image: %v", err)
+		return "", -1, fmt.Errorf("failed to save image: %v", err)
 	}
-	return filenameOutput, originalWidth, originalHeight, nil
+	return filenameOutput, scalingFactor, nil
 }
