@@ -84,7 +84,7 @@ func RequestImageFeatures(c *gin.Context) {
 		lanzcosWidth = 250
 	}
 	outputFilename := fmt.Sprintf("%s_lanzcos.jpg", screenshotFile)
-	_, err = compression.Lanzcos(screenshotFile, lanzcosWidth, outputFilename)
+	_, originalWidth, originalHeight, err := compression.Lanzcos(screenshotFile, lanzcosWidth, outputFilename)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": fmt.Sprintf("failed to downscale lanzcos: %v", err),
@@ -111,6 +111,10 @@ func RequestImageFeatures(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"azureResponse": azureJson,
+		"originalImage": gin.H{
+			"width":  originalWidth,
+			"height": originalHeight,
+		},
 	})
 }
 
