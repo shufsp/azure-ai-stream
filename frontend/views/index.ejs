@@ -12,14 +12,21 @@
             const ctx = canvas.getContext('2d');
 
             const props = {
-                "avifQuality": "<%= avifQuality %>",
-                "avifAlphaQuality": "<%= avifAlphaQuality %>",
-                "avifSpeed": "<%= avifSpeed %>",
+                "token": "<%= token %>",
+                "window": "<%= window %>",
+                "method": "<%= method %>",
                 "features": "<%= features %>",
-                "lanzcosWidth": "<%= lanzcosWidth %>"
+                "avif": {
+                    "quality": "<%= avif.quality %>",
+                    "alphaQuality": "<%= avif.alphaQuality %>",
+                    "speed": "<%= avif.speed %>",
+                },
+                "lanzcos": {
+                    "width": "<%= lanzcos.width %>"
+                },
             }
 
-            scarab("<%= token %>", "<%= window %>", "<%= method %>", props)
+            scarab(props)
                 .then(response => response.json())
                 .then(response => consumeScarabToCanvas(response, ctx))
         })
